@@ -27,3 +27,20 @@ Once the Azure resource and deployment token are configured, set repository vari
 The workflow declares both URLs in the build job's env block. Push or rerun the workflow after changing URLs, because Vue embeds them during compilation. Trailing slashes are accepted.
 
 Validate products load, place an order, and verify message activity in RabbitMQ's order_queue.
+
+## Instructor-approved VM deployment
+
+The October 5, 2026 announcement by Ramy Mohamed permits deploying the store-front on a VM when Azure student policy blocks Static Web Apps. This lab uses store-front-vm at http://74.152.33.106/ with Nginx. Backend services still run on Azure App Service and RabbitMQ runs on its dedicated VM.
+
+On the VM, the frontend source is in /opt/cst8915-lab3/store-front. To deploy a reviewed update, fetch the repository, check out the desired commit, then build as azureuser with:
+
+```sh
+export VUE_APP_ORDER_SERVICE_URL=https://order-service-tajudeen-lab3.azurewebsites.net
+export VUE_APP_PRODUCT_SERVICE_URL=https://product-service-tajudeen-lab3.azurewebsites.net
+npm ci --no-audit --no-fund
+npm run build
+```
+
+Nginx serves the dist directory using /etc/nginx/sites-available/cst8915-lab3. It starts automatically with the VM. The public frontend uses HTTP; requests to both backend APIs use HTTPS. No broker secret is included in the frontend.
+
+GitHub Actions continues to validate the production build and save store-front-dist. It does not automatically update the VM. Keep AZURE_STATIC_WEB_APPS_DEPLOYMENT_ENABLED=false for this approved alternative.
