@@ -71,7 +71,8 @@ export default {
   methods: {
     async fetchProducts() {
       try {
-        const response = await fetch(`${process.env.VUE_APP_PRODUCT_SERVICE_URL}/products`);        
+        const baseUrl = (process.env.VUE_APP_PRODUCT_SERVICE_URL || '').replace(/\/+$/, '');
+        const response = await fetch(`${baseUrl}/products`);
         if (response.ok) {
           this.products = await response.json();
         } else {
@@ -89,7 +90,8 @@ export default {
       }
 
       try {
-        const response = await fetch(`${process.env.VUE_APP_ORDER_SERVICE_URL}/orders`, {
+        const baseUrl = (process.env.VUE_APP_ORDER_SERVICE_URL || '').replace(/\/+$/, '');
+        const response = await fetch(`${baseUrl}/orders`, {
 
           method: 'POST',
           headers: {

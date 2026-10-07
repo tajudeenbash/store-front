@@ -1,42 +1,29 @@
-# Store-Front
+# Algonquin Pet Store — Store Front
 
-The store-front is the Vue.js frontend that allows users to select products and place orders.
+Vue frontend for the product and order APIs.
 
-## Requirements
+## Local setup
 
-- Node.js 24 LTS and npm (installed in the Order Service guide)
-- Product and Order services running
-- Start inside the repository's `store-front` directory. The main guide already takes you there.
+Copy .env.example to .env and set the API base URLs:
 
-## Setup Instructions
+```dotenv
+VUE_APP_ORDER_SERVICE_URL=http://localhost:3000
+VUE_APP_PRODUCT_SERVICE_URL=http://localhost:3030
+```
 
-1. Install the versions recorded in the committed lockfile:
+Run `npm ci`, then `npm run serve`. Restart after changing .env.
 
-   ```bash
-   npm ci
-   ```
+## Azure Static Web Apps
 
-2. **Configure the API URLs before starting the Store Front.**
+The GitHub Actions workflow builds the app and deploys dist. Configure these repository variables in Settings → Secrets and variables → Actions → Variables:
 
-   For an Azure VM, open `src/components/OrderForm.vue` and replace the two URL strings in the `fetch(...)` calls:
+- VUE_APP_ORDER_SERVICE_URL: the order App Service HTTPS base URL.
+- VUE_APP_PRODUCT_SERVICE_URL: the product App Service HTTPS base URL.
 
-   | Original URL                     | Replacement                           |
-   | -------------------------------- | ------------------------------------- |
-   | `http://localhost:3030/products` | `http://<VM-PUBLIC-IP>:3030/products` |
-   | `http://localhost:3000/orders`   | `http://<VM-PUBLIC-IP>:3000/orders`   |
+Set the repository secret AZURE_STATIC_WEB_APPS_API_TOKEN to your Static Web App deployment token. API URLs are public build configuration; never put broker credentials in frontend variables.
 
-   Substitute your VM's actual public IP for `<VM-PUBLIC-IP>`. For a local installation, keep both localhost URLs.
+Once the Azure resource and deployment token are configured, set repository variable AZURE_STATIC_WEB_APPS_DEPLOYMENT_ENABLED to true. While region access is unresolved, the workflow builds and saves a downloadable store-front-dist artifact and explicitly skips hosting deployment.
 
-   Your browser runs on your laptop. Its `localhost` points to that laptop; using the VM's public IP sends API requests to your VM. The development WebSocket automatically uses the address in your browser.
+The workflow declares both URLs in the build job's env block. Push or rerun the workflow after changing URLs, because Vue embeds them during compilation. Trailing slashes are accepted.
 
-3. Start the Store Front:
-
-   ```bash
-   npm run serve
-   ```
-
-   Keep this terminal open; do not start a second copy from the main guide.
-
-4. Open `http://<VM-PUBLIC-IP>:8080` for Azure, or `http://localhost:8080` locally. On Azure, use the public IP you saved in the portal, even if the terminal's Network URL shows a private IP.
-
-Select one product, enter a positive quantity, and click **Place Order**. Two units of Dog Food should total **$39.98**. Verify the queued message using the RabbitMQ guide and check the browser console for errors.
+Validate products load, place an order, and verify message activity in RabbitMQ's order_queue.
